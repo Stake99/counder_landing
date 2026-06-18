@@ -4,6 +4,7 @@ import { ScrollProgressProvider } from "@/components/ScrollProgress";
 import { GlobeBackground } from "@/components/GlobeBackground";
 import { GlobeNodeList } from "@/components/GlobeNodeList";
 import { GalleryFacesList } from "@/components/GalleryFacesList";
+import { GalleryCaptions } from "@/components/GalleryCaptions";
 import { Particles } from "@/components/Particles";
 import { VideoTransition } from "@/components/VideoTransition";
 import { Nav } from "@/components/sections/Nav";
@@ -22,6 +23,7 @@ import { Footer } from "@/components/sections/Footer";
  *   z-1  particle drift (fixed)    → atmospheric depth
  *   z-2  video (fixed)             → crossfades in over the globe at the resolve
  *   z-10 #content (scrolls over)   → hero · pillars · presenting · resolve
+ *   z-30 gallery captions (fixed)  → words that surface with the faces gallery
  *   z-50 nav (fixed)
  */
 export function HomeExperience() {
@@ -33,6 +35,7 @@ export function HomeExperience() {
       <Nav />
       <GlobeNodeList />
       <GalleryFacesList />
+      <GalleryCaptions />
       <main id="content" className="relative z-10">
         <Hero />
         <Pillars />
