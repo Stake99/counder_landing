@@ -238,6 +238,80 @@ html.lenis body {
   border-left: 1px solid var(--hero-line);
 }
 
+/* Surfacing-faces captions — a fixed, scroll-synced editorial layer. Each block
+ * rises, holds, and lifts away in lockstep with its photo tile (GalleryCaptions
+ * drives opacity/transform/filter imperatively per frame). Pointer-transparent
+ * so it never intercepts scroll or the globe's hover targets. */
+.gallery-captions {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+.gcap {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  width: min(660px, 86vw);
+  text-align: center;
+  will-change: transform, opacity, filter;
+  transform: translate(-50%, 0);
+}
+.gcap__concept {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0 0 0.9rem;
+  font-family: var(--font-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: var(--hero-cape);
+}
+.gcap__index {
+  color: var(--hero-muted);
+  font-variant-numeric: tabular-nums;
+}
+.gcap__rule {
+  display: inline-block;
+  width: 30px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hero-cape), rgba(224, 123, 26, 0.15));
+}
+.gcap__headline {
+  margin: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3.6vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--hero-fg);
+  /* Halo so the line stays legible over the bright globe / photos. */
+  text-shadow:
+    0 1px 22px rgba(255, 255, 255, 0.92),
+    0 1px 4px rgba(255, 255, 255, 0.95);
+}
+.gcap__sub {
+  margin: 1rem 0 0;
+  font-family: var(--font-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  color: var(--hero-muted);
+}
+.gcap__dot {
+  margin: 0 0.5rem;
+  color: var(--hero-cape);
+}
+@media (max-width: 640px) {
+  .gcap {
+    bottom: 10%;
+    width: 90vw;
+  }
+}
+
 .node-person {
   color: var(--hero-fg);
 }
