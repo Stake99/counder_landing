@@ -1,26 +1,343 @@
 @import "tailwindcss";
 
+/*
+ * Counder design tokens — see DESIGN_TOKENS.md.
+ * Light values are taken verbatim from counder.com's :root. The hero runs on a
+ * dark stage (derived) so the luminous globe can carry the composition.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand (exact, from counder.com) */
+  --black: #000000;
+  --white: #ffffff;
+  --gray-body: #666666;
+  --gray-muted: #999999;
+  --gray-border: #e0e0e0;
+  --gray-placeholder: #757575;
+  --cream: #f5f3ef;
+
+  --content-width: 1420px;
+  --side-padding: 40px;
+
+  /* Light editorial stage — white, to blend with counder.com. Text is near-black
+   * on white; the ONLY colour is the network coverage (arcs + Cape Town landing),
+   * which keeps `--hero-cape`. */
+  --hero-bg: #ffffff;
+  --hero-bg-2: #f4f4f4;
+  --hero-fg: #0a0a0a;
+  --hero-muted: #666666;
+  --hero-line: rgba(0, 0, 0, 0.12);
+  /* Coverage accent (Cape Town / arcs) — a deep amber that reads on white. */
+  --hero-cape: #e07b1a;
+
+  /* Page defaults */
+  --background: var(--white);
+  --foreground: var(--black);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --side-padding: 20px;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-black: var(--black);
+  --color-white: var(--white);
+  --color-cream: var(--cream);
+  --color-gray-body: var(--gray-body);
+  --color-gray-muted: var(--gray-muted);
+  --color-gray-border: var(--gray-border);
+
+  --color-hero-bg: var(--hero-bg);
+  --color-hero-fg: var(--hero-fg);
+  --color-hero-muted: var(--hero-muted);
+
+  /* Fonts wired from next/font (see app/layout.tsx) */
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-dm-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The home is a dark globe experience: the page sits on the dark stage and the
+ * fixed globe canvas paints over this backdrop. Light product routes (the (app)
+ * group) lay their own white container over it. */
+html {
+  background: var(--hero-bg);
+}
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--hero-fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* counder.com interaction details (exact) */
+::selection {
+  background: var(--black);
+  color: var(--white);
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Eyebrow / kicker — DM Mono, uppercase, tracked (matches live rhythm) */
+.kicker {
+  font-family: var(--font-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+}
+
+/* Pill button — mirrors .btn-outline on counder.com, inverted for the dark hero */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 100px;
+  padding: 13px 26px;
+  text-decoration: none;
+  width: fit-content;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.btn-pill--solid {
+  background: var(--black);
+  color: var(--white);
+  border: 1px solid var(--black);
+}
+.btn-pill--ghost {
+  background: transparent;
+  color: var(--hero-fg);
+  border: 1px solid var(--hero-line);
+}
+@media (hover: hover) {
+  .btn-pill--solid:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+  }
+  .btn-pill--ghost:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.24);
+    transform: translateY(-1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-pill:hover {
+    transform: none;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Globe member nodes (drei <Html> anchored to real cities). The dot pins to the
+ * node; text flows left (inward) so labels never clip the right edge. */
+.node-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--hero-fg);
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.9);
+  opacity: 0.86;
+  animation: node-in 0.9s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+/* Right-side nodes: right-middle on the anchor, text flows left (inward). */
+.node-label--left {
+  transform: translate(-100%, -50%);
+  padding-right: 2px;
+}
+/* Centre/left nodes: dot on the anchor, text flows right. */
+.node-label--right {
+  transform: translate(0, -50%);
+  padding-left: 2px;
+}
+/* Hover-to-meet card — surfaces beside the hovered/focused network node. */
+.meet-card {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--hero-fg);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--hero-line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  transform: translate(12px, -50%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.meet-card .meet-role {
+  color: var(--hero-muted);
+  padding-left: 6px;
+  margin-left: 6px;
+  border-left: 1px solid var(--hero-line);
+}
+
+/* Gallery tile caption — surfaces under each photo tile, with a scrim. */
+.gallery-cap {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--hero-fg);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--hero-line);
+  border-radius: 7px;
+  padding: 4px 9px;
+  white-space: nowrap;
+  transform: translate(-50%, 0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+.gallery-cap .cap-role {
+  color: var(--hero-muted);
+  padding-left: 6px;
+  margin-left: 6px;
+  border-left: 1px solid var(--hero-line);
+}
+
+.node-person {
+  color: var(--hero-fg);
+}
+.node-role {
+  color: var(--hero-muted);
+  padding-left: 6px;
+  border-left: 1px solid var(--hero-line);
+}
+.node-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 100px;
+  background: var(--hero-cape, #e07b1a);
+  box-shadow: 0 0 6px 1px rgba(224, 123, 26, 0.45);
+  flex: none;
+}
+@keyframes node-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .node-label {
+    animation: none;
+  }
+}
+
+/* Reveal primitives for the headline (GSAP animates the inner span) */
+.reveal-line {
+  display: block;
+  overflow: hidden;
+}
+.reveal-line > span {
+  display: block;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line > span {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Bouncing scroll-hint arrow (hero). */
+.scroll-hint {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-right: 1.5px solid var(--hero-muted);
+  border-bottom: 1.5px solid var(--hero-muted);
+  transform: rotate(45deg);
+  animation: scroll-bounce 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes scroll-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(45deg);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(7px) rotate(45deg);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Pillar cards — wipe-revealed via an animated linear-gradient mask. GSAP drives
+ * `--p` (0% → 112%); the opaque front sweeps across with a soft trailing edge.
+ * Horizontal on desktop, vertical on mobile (mirrors the inspiration). */
+.pillar-card {
+  --p: 0%;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0 calc(var(--p) - 11%),
+    transparent var(--p)
+  );
+  mask-image: linear-gradient(
+    90deg,
+    #000 0 calc(var(--p) - 11%),
+    transparent var(--p)
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+@media (max-width: 768px) {
+  .pillar-card {
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      #000 0 calc(var(--p) - 11%),
+      transparent var(--p)
+    );
+    mask-image: linear-gradient(
+      180deg,
+      #000 0 calc(var(--p) - 11%),
+      transparent var(--p)
+    );
+  }
 }
