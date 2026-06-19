@@ -339,6 +339,245 @@ html.lenis body {
   }
 }
 
+/* ── Cape Town "arrival" panel ────────────────────────────────────────────────
+ * Floats over the dimmed globe when Cape Town is clicked (see CapeTownMap). The
+ * globe stays faintly visible through a light scrim; the converging arcs stop
+ * (handled in Scene). Fades + lifts in; dismissed by × / Esc / click-anywhere. */
+.ct-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--side-padding);
+  background: rgba(255, 255, 255, 0.58);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    visibility 0s linear 0.5s;
+}
+.ct-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    visibility 0s;
+}
+.ct-panel {
+  width: min(440px, 100%);
+  background: var(--white);
+  border: 1px solid var(--hero-line);
+  border-radius: 16px;
+  padding: 22px 22px 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+  transform: translateY(16px) scale(0.985);
+  transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ct-overlay.is-open .ct-panel {
+  transform: none;
+}
+.ct-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ct-eyebrow {
+  color: var(--hero-muted);
+  margin: 0;
+}
+.ct-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 100px;
+  border: 1px solid var(--hero-line);
+  background: transparent;
+  color: var(--hero-fg);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+@media (hover: hover) {
+  .ct-close:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.24);
+  }
+}
+.ct-title {
+  margin: 14px 0 4px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  letter-spacing: -0.02em;
+  color: var(--hero-fg);
+}
+.ct-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 6px 0 4px;
+}
+.ct-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.ct-country {
+  fill: rgba(224, 123, 26, 0.07);
+  stroke: var(--hero-cape);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.ct-dot {
+  fill: var(--hero-cape);
+}
+.ct-ping {
+  fill: none;
+  stroke: var(--hero-cape);
+  stroke-width: 6;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+.ct-overlay.is-open .ct-ping--1 {
+  animation: ct-ping 2.4s ease-out infinite;
+}
+.ct-overlay.is-open .ct-ping--2 {
+  animation: ct-ping 2.4s ease-out infinite 1.2s;
+}
+@keyframes ct-ping {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+.ct-pin-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  transform: translate(16px, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ct-pin-name {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: -0.01em;
+  color: var(--hero-fg);
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.9);
+}
+.ct-pin-coords {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--hero-muted);
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.9);
+}
+.ct-caption {
+  margin: 8px 0 0;
+  max-width: 36ch;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--hero-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-overlay,
+  .ct-panel {
+    transition: opacity 0.2s linear;
+  }
+  .ct-panel {
+    transform: none;
+  }
+  .ct-ping {
+    display: none;
+  }
+}
+
+/* "Beyond this page" continuation beat — a sweeping hairline that reads as
+ * "the experience continues", plus a CTA arrow that nudges forward on hover. */
+.continues-cta {
+  text-decoration: none;
+  position: relative;
+}
+.continues-cta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (hover: hover) {
+  .continues-cta:hover::after {
+    transform: scaleX(1);
+  }
+}
+.continues-arrow {
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (hover: hover) {
+  .continues-cta:hover .continues-arrow {
+    transform: translateX(5px);
+  }
+}
+.continues-line {
+  width: min(280px, 70%);
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(224, 123, 26, 0.55) 50%,
+    transparent 100%
+  );
+  background-size: 55% 100%;
+  background-repeat: no-repeat;
+  background-position: -60% 0;
+  animation: continues-sweep 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes continues-sweep {
+  0% {
+    background-position: -60% 0;
+  }
+  100% {
+    background-position: 160% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .continues-line {
+    animation: none;
+    background-position: 50% 0;
+  }
+  .continues-arrow {
+    transition: none;
+  }
+}
+
 /* Reveal primitives for the headline (GSAP animates the inner span) */
 .reveal-line {
   display: block;

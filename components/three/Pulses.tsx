@@ -30,8 +30,8 @@ interface PulsesProps {
   pausedRef?: React.RefObject<boolean>;
 }
 
-const LIFETIME = 2.4; // seconds for a ping to expand and fade
-const MAX_SCALE = 0.42; // peak ring radius (world units, ~globe-relative)
+const LIFETIME = 4.8; // seconds for a ping to expand and fade (slower, gentler)
+const MAX_SCALE = 0.1; // peak ring radius (world units, ~globe-relative)
 
 export const Pulses = forwardRef<PulsesHandle, PulsesProps>(function Pulses(
   {

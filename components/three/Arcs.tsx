@@ -81,6 +81,9 @@ export interface ArcsProps {
   onLand?: () => void;
   /** Index of the hovered origin city (-1 = none) — its arc is emphasised. */
   hoverRef?: React.RefObject<number>;
+  /** When true, fade the whole convergence out (e.g. while the Cape Town map is
+   *  open) and stop firing landing pulses; un-set to ramp it back in. */
+  suppressRef?: React.RefObject<boolean>;
 }
 
 export function Arcs({
@@ -92,6 +95,7 @@ export function Arcs({
   pausedRef,
   onLand,
   hoverRef,
+  suppressRef,
 }: ArcsProps) {
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const prevHeads = useRef<number[]>([]);
@@ -158,14 +162,22 @@ export function Arcs({
 
     if (reduced || pausedRef?.current) return;
 
+    const suppressed = suppressRef?.current ?? false;
+
     tRef.current += delta;
     const t = tRef.current;
     mat.uniforms.uTime.value = t;
 
-    // Self-contained intro fade — ramp the arcs up from black over ~2.2s so the
-    // convergence "arrives" rather than popping in. (Reduced motion starts at 1.)
+    // Global alpha: ramp UP from black over ~2.2s so the convergence "arrives"
+    // rather than popping in; when suppressed (Cape Town map open), fade DOWN
+    // quickly so the beaming stops. (Reduced motion starts at 1.)
     const a = mat.uniforms.uGlobalAlpha;
-    if (a.value < 1) a.value = Math.min(1, a.value + delta / 2.2);
+    const target = suppressed ? 0 : 1;
+    if (a.value < target) a.value = Math.min(target, a.value + delta / 2.2);
+    else if (a.value > target) a.value = Math.max(target, a.value - delta * 2.4);
+
+    // No new landing pulses while suppressed.
+    if (suppressed) return;
 
     // CPU mirror: detect comet arrivals to fire landing pulses.
     if (prevHeads.current.length !== phases.length) {

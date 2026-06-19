@@ -58,6 +58,14 @@ export const PRESENTING = {
   note: "You can't talk about the future without understanding the past. Yesterday, today, tomorrow — in the Mother City, where today meets tomorrow.",
 } as const;
 
+/** The "continues" beat — this is a landing, not the whole site, so a quiet
+ *  closing note signals the experience carries on beyond this page. */
+export const CONTINUES = {
+  eyebrow: "Beyond this page",
+  line: "What you've seen is one window onto Counder. The network, the conference, and the conversation continue — year-round, across 27+ countries.",
+  cta: { label: "Continue the conversation", href: "https://counder.com" },
+} as const;
+
 /** The resolve / footer call-to-action. */
 export const RESOLVE = {
   eyebrow: "Join Counder · January 2027",

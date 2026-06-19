@@ -3,18 +3,14 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import {
-  RESOLVE,
-  FOOTER_COLUMNS,
-  QUICK_FACTS,
-  SOCIALS,
-} from "@/lib/content";
+import { CONTINUES, FOOTER_COLUMNS, SOCIALS } from "@/lib/content";
 
 /**
  * The resolve: the camera pulls back, the globe settles, and the Counder
- * ring-mark + a single invitation CTA land — then the full site footer. The
- * lower gradient deepens to near-solid so the footer stays legible as the globe
- * recedes behind it.
+ * ring-mark lands with a quiet "beyond this page" note — this is a landing, not
+ * the whole site, so the experience is shown carrying on — then the full site
+ * footer. The lower gradient deepens to near-solid so the footer stays legible
+ * as the globe recedes behind it.
  */
 export function Footer() {
   const reduced = useReducedMotion();
@@ -71,10 +67,12 @@ export function Footer() {
           "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.78) 40%, #ffffff 100%)",
       }}
     >
-      {/* Resolve CTA */}
+      {/* Resolve — the brand ring-mark settles with a quiet "beyond this page"
+          note. This is a landing, not the whole site, so the experience is shown
+          carrying on (sweeping line = "more follows") rather than an apply CTA. */}
       <div
         ref={ctaRef}
-        className="mx-auto flex min-h-[92svh] max-w-3xl flex-col items-center justify-center px-[var(--side-padding)] text-center"
+        className="mx-auto flex min-h-[88svh] max-w-2xl flex-col items-center justify-center px-[var(--side-padding)] text-center"
       >
         <Image
           data-rise
@@ -85,39 +83,25 @@ export function Footer() {
           className="opacity-90 invert"
         />
         <p data-rise className="kicker mt-8 text-hero-muted">
-          {RESOLVE.eyebrow}
+          {CONTINUES.eyebrow}
         </p>
-        <h2
-          data-rise
-          className="mt-5 text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.02] tracking-[-0.03em] text-hero-fg"
-        >
-          {RESOLVE.title}
-        </h2>
         <p
           data-rise
-          className="mx-auto mt-6 max-w-lg text-[clamp(1rem,1.4vw,1.2rem)] font-light leading-[1.6] text-hero-muted"
+          className="mx-auto mt-6 max-w-xl text-[clamp(1.3rem,2.4vw,2rem)] font-light leading-[1.4] tracking-[-0.015em] text-hero-fg"
         >
-          {RESOLVE.body}
+          {CONTINUES.line}
         </p>
-        <div data-rise className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <a href={RESOLVE.primary.href} className="btn-pill btn-pill--solid">
-            {RESOLVE.primary.label}
-          </a>
-          <a href={RESOLVE.secondary.href} className="btn-pill btn-pill--ghost">
-            {RESOLVE.secondary.label}
-          </a>
-        </div>
-
-        <dl data-rise className="mt-16 grid w-full grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
-          {QUICK_FACTS.map((f) => (
-            <div key={f.label} className="text-center">
-              <dt className="text-[clamp(1.6rem,3vw,2.4rem)] font-medium text-hero-fg">
-                {f.value}
-              </dt>
-              <dd className="kicker mt-2 text-hero-muted">{f.label}</dd>
-            </div>
-          ))}
-        </dl>
+        <a
+          data-rise
+          href={CONTINUES.cta.href}
+          className="continues-cta kicker mt-9 inline-flex items-center gap-2 text-hero-fg"
+        >
+          {CONTINUES.cta.label}
+          <span className="continues-arrow" aria-hidden>
+            →
+          </span>
+        </a>
+        <div data-rise className="continues-line mx-auto mt-12" aria-hidden />
       </div>
 
       {/* Footer rail */}
