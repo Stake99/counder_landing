@@ -13,6 +13,7 @@ import { OrbitalRings } from "./OrbitalRings";
 import { Arcs, type ArcsProps } from "./Arcs";
 import { Pulses, type PulsesHandle } from "./Pulses";
 import { Starfield } from "./Starfield";
+import { WordSatellites } from "./WordSatellites";
 import { CITIES, CAPE_TOWN_NODE } from "@/lib/cities";
 import { CAPE_TOWN, greatCircleArc, latLngToVector3, type LatLng } from "@/lib/geo";
 
@@ -189,6 +190,11 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
   const prevActive = useRef(-1);
   const conferenceRef = useRef<HTMLElement | null>(null);
 
+  // Cape Town "arrival": caped → arcs suppressed + map open; capePending → wait
+  // for the descent to settle before opening the map (see the fly block + meet).
+  const capedRef = useRef(false);
+  const capePendingRef = useRef(false);
+
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const ndc = useMemo(() => new THREE.Vector2(), []);
 
@@ -203,10 +209,18 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
       if (index < 0) return;
       lastInteract.current = nowSec();
       if (index >= CAPE_INDEX) {
-        // Cape Town — the signature descent gets extra ring-pulses.
+        // Cape Town — the signature descent gets extra ring-pulses, then the
+        // South Africa map surfaces (immediately under reduced motion; otherwise
+        // once the descent settles — see the fly block).
         pulsesRef.current?.trigger();
         pulsesRef.current?.trigger();
         pulsesRef.current?.trigger();
+        if (reduced) {
+          capedRef.current = true;
+          window.dispatchEvent(new CustomEvent("globe:cape-enter"));
+        } else {
+          capePendingRef.current = true;
+        }
       }
       if (!reduced) {
         fly.current.active = true;
@@ -268,7 +282,10 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
       drag.current.active = false;
       document.body.style.userSelect = "";
       lastInteract.current = nowSec();
-      if (drag.current.moved >= TAP_THRESH || isUI(e.target)) return;
+      // Touch taps jitter more than mouse clicks — allow a little more travel on
+      // coarse pointers before treating a press as a drag (else taps get eaten).
+      const tapThresh = coarse ? 16 : TAP_THRESH;
+      if (drag.current.moved >= tapThresh || isUI(e.target)) return;
       // Tap/click → raycast immediately (hover state is suppressed mid-press).
       ndc.set(ptr.current.x, ptr.current.y);
       raycaster.setFromCamera(ndc, camera);
@@ -293,7 +310,12 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
               1,
             ),
           );
-          if (ang < 0.18) meet(CAPE_INDEX);
+          // Cape Town is oriented to face the camera, so the front-centre cap of
+          // the globe IS roughly Cape Town. A generous angular target (wider on
+          // touch) makes the click reliably land — the old ~10° cap was a ~20px
+          // bullseye that taps almost always missed.
+          const capeThresh = coarse ? 0.52 : 0.42;
+          if (ang < capeThresh) meet(CAPE_INDEX);
         }
       }
     };
@@ -312,6 +334,11 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
     const onMeetEvt = (e: Event) => {
       meet((e as CustomEvent<{ index: number }>).detail?.index ?? -1);
     };
+    // The Cape Town map closed → resume the converging arcs.
+    const onCapeExit = () => {
+      capedRef.current = false;
+      capePendingRef.current = false;
+    };
 
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerdown", onDown, { passive: true });
@@ -321,6 +348,7 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
     document.addEventListener("pointerleave", onLeave);
     window.addEventListener("globe:focus", onFocusEvt as EventListener);
     window.addEventListener("globe:meet", onMeetEvt as EventListener);
+    window.addEventListener("globe:cape-exit", onCapeExit as EventListener);
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onDown);
@@ -330,6 +358,7 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
       document.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("globe:focus", onFocusEvt as EventListener);
       window.removeEventListener("globe:meet", onMeetEvt as EventListener);
+      window.removeEventListener("globe:cape-exit", onCapeExit as EventListener);
     };
   }, [gl, camera, coarse, meet, capeDir, raycaster, ndc, scratch]);
 
@@ -415,6 +444,18 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
       else {
         camBlend.current = 0;
         fly.current.active = false;
+      }
+
+      // Descent has settled on Cape Town → stop the arcs and surface the map.
+      // (Separate from the timer chain above — must not steal its final `else`.)
+      if (
+        capePendingRef.current &&
+        fly.current.city >= CAPE_INDEX &&
+        ft >= RAMP
+      ) {
+        capePendingRef.current = false;
+        capedRef.current = true;
+        window.dispatchEvent(new CustomEvent("globe:cape-enter"));
       }
     } else {
       camBlend.current += (0 - camBlend.current) * lerp(4);
@@ -602,6 +643,7 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
             pausedRef={pausedRef}
             onLand={onLand}
             hoverRef={arcHoverRef}
+            suppressRef={capedRef}
           />
           <Pulses
             ref={pulsesRef}
@@ -657,6 +699,10 @@ function Stage({ progressRef, pausedRef, reduced, quality }: SceneProps) {
             </Html>
           )}
         </group>
+
+        {/* Tagline word-satellites orbiting the globe (outside the globe group so
+            their orbits stay steady, independent of the globe's scroll-spin). */}
+        <WordSatellites pausedRef={pausedRef} reduced={reduced} />
       </group>
 
       {/* Bloom essentially off on white (threshold 1.0) — composer kept only so

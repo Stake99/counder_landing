@@ -72,7 +72,7 @@ export function VideoTransition() {
         playsInline
         preload="auto"
       >
-        <source src="/video/first_vid.mp4" type="video/mp4" />
+        <source src="/video/1first_vid.mp4" type="video/mp4" />
       </video>
       {/* Legibility scrim — keeps the resolve copy + footer readable over it. */}
       <div
